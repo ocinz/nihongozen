@@ -1,6 +1,8 @@
-name: Deploy Main Branch
+name: Deploy Staging Branch
 run-name: ${{ github.actor }} is deploying to main
-on: [push]
+on:
+  push:
+    branches: [staging]
 jobs:
   deploy:
     runs-on: ubuntu-latest

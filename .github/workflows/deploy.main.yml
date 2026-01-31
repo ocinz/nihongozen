@@ -1,6 +1,8 @@
 name: Deploy Main Branch
 run-name: ${{ github.actor }} is deploying to main
-on: [push]
+on:
+  push:
+    branches: [main]
 jobs:
   deploy:
     runs-on: ubuntu-latest
