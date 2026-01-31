@@ -14,6 +14,8 @@ RUN pnpm install
 # baru copy source code
 COPY . .
 
+RUN pnpm build
+
 EXPOSE 3000
 
-CMD ["pnpm", "dev"]
+CMD ["node", ".output/server/index.mjs"]
