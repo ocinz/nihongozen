@@ -1,0 +1,536 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+datasource db {
+  provider = "postgresql"
+}
+model User {
+  id        String   @id @default(uuid(7))
+  email     String   @unique
+  password  String
+  name      String?
+  role      Role     @default(USER)  
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  on_tryout Boolean @default(false)
+  active Boolean @default(false)
+  activation_token String 
+  exp Int
+
+  bootcamp_enrollments BootcampEnrollment[]
+  subscriptions Subscription[]
+  user_tryout_attempts UserTryoutAttempt[]
+  card_reviews    CardReview[]
+  activity_histories ActivityHistory[]
+  user_on_learning_paths UserOnLearningPath[]
+  learning_paths LearningPath[]
+  bootcamps Bootcamp[]
+  pricings Pricing[]
+  daily_lessons DailyLesson[]
+  grammars Grammar[]
+  cards Card[]
+  activities Activity[]
+  tryouts Tryout[]
+  quizzes Quiz[]
+  grammars_decks GrammarDeck[]
+  card_decks CardDeck[]
+  suplements Suplement[]
+  quiz_questions QuizQuestion[]
+  sections Section[]
+  questions Question[]
+  choices Choice[]
+  grammars_reviews GrammarReview[]
+  stimulis Stimuli[]
+  quiz_choices QuizChoice[]
+  user_quiz_attempts UserQuizAttempt[]
+  user_quiz_answers UserQuizAnswer[] 
+  refresh_tokens RefreshToken[]
+}
+model Bootcamp {
+  id        String   @id @default(uuid(7))
+  title     String
+  duration_days Int
+  start_date DateTime?
+  end_date   DateTime?
+  description String?
+  price     Float?
+  published Boolean  @default(false)
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  enrollments BootcampEnrollment[]
+  learning_path_id String
+  learning_path LearningPath @relation(fields: [learning_path_id], references: [id])
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+}
+model BootcampEnrollment {
+  id        String   @id @default(uuid(7))
+  user_id    String
+  bootcamp_id String
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  user      User     @relation(fields: [user_id], references: [id])
+  bootcamp  Bootcamp @relation(fields: [bootcamp_id], references: [id])
+}
+model Pricing {
+  id        String   @id @default(uuid(7))
+  name      String
+  description String?
+  price     Float
+  duration_days Int
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+}
+model Subscription {
+  id        String   @id @default(uuid(7))
+  status    PaymentStatus @default(PENDING)
+  created_at DateTime @default(now())
+  start_date DateTime?
+  end_date   DateTime?
+  activated_at  DateTime?
+  deleted_at DateTime?
+  user_id    String
+  user      User     @relation(fields: [user_id], references: [id])
+}
+model LearningPath {
+  id        String   @id @default(uuid(7))
+  title     String
+  description String?
+  level     Level  
+  created_at DateTime @default(now())
+  deleted_at DateTime? 
+
+  // user_id String
+  // user   User @relation(fields: [user_id], references: [id])
+  creator_id  String
+  creator     User     @relation(fields: [creator_id], references: [id])
+  daily_lessons DailyLesson[]
+  user_on_learning_paths UserOnLearningPath[]
+  bootcamps Bootcamp[]
+}
+model UserOnLearningPath {
+  id        String   @id @default(uuid(7))
+  user_id    String
+  user   User @relation(fields: [user_id], references: [id])
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+
+  learning_path_id String
+  learning_path   LearningPath @relation(fields: [learning_path_id], references: [id])
+}
+model DailyLesson {
+  id        String   @id @default(uuid(7))
+  title     String
+  content   String?
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  sequence     Int
+  activity Activity[]
+  learning_path_id String
+  learning_path   LearningPath @relation(fields: [learning_path_id], references: [id])
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+}
+model Activity {
+  id        String   @id @default(uuid(7))
+  sequence     Int
+
+  daily_lesson_id String
+  daily_lesson   DailyLesson @relation(fields: [daily_lesson_id], references: [id])
+
+  grammar_deck   GrammarDeck? 
+  card_deck CardDeck?
+  tryout       Tryout?
+  quiz         Quiz?
+
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+
+  activity_histories ActivityHistory[]
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+}
+model GrammarDeck {
+  id        String   @id @default(uuid(7))
+  title     String
+  exp Int
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+
+  grammars Grammar[]
+  activity_histories ActivityHistory[]
+
+  activity_id String? @unique
+  activity   Activity? @relation(fields: [activity_id], references: [id])
+
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+}
+model Grammar {
+  id        String   @id @default(uuid(7))
+  title     String
+  content   String
+  front_text String
+  back_text  String
+  example   String?
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  level     Level?
+
+  grammar_deck_id String
+  grammar_deck   GrammarDeck @relation(fields: [grammar_deck_id], references: [id])
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+  grammars_reviews GrammarReview[]
+}
+model GrammarReview {
+  id            String    @id @default(uuid(7))
+  user_id        String
+  user          User      @relation(fields: [user_id], references: [id])
+  grammar_id   String
+  grammar     Grammar @relation(fields: [grammar_id], references: [id])
+  due           DateTime
+  stability     Float
+  difficulty    Float
+  elapsed_days   Int
+  scheduled_days Int
+  reps          Int
+  lapses        Int
+  state         State @default(NEW)
+  last_review    DateTime?
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+}
+model CardDeck {
+  id        String   @id @default(uuid(7))
+  title     String
+  exp Int
+  
+  published Boolean  @default(false)
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+
+  cards Card[]
+  activity_id String?  @unique
+  activity Activity? @relation(fields: [activity_id], references: [id])
+  activity_histories ActivityHistory[]
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+}
+model Card {
+  id        String   @id @default(uuid(7))
+  front_text String
+  back_text  String
+  example   String?
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+
+  card_deck_id String
+  card_deck   CardDeck @relation(fields: [card_deck_id], references: [id])
+  card_reviews         CardReview[]
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+}
+model CardReview {
+  id            String    @id @default(uuid(7))
+  user_id        String
+  user          User      @relation(fields: [user_id], references: [id])
+  card_id   String
+  card     Card @relation(fields: [card_id], references: [id])
+  due           DateTime
+  stability     Float
+  difficulty    Float
+  elapsed_days   Int
+  scheduled_days Int
+  reps          Int
+  lapses        Int
+  state         State @default(NEW)
+  last_review    DateTime?
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+}
+model Suplement {
+  id        String   @id @default(uuid(7))
+  title     String
+  exp Int
+  activity_histories ActivityHistory[]
+
+  audio_url  String?
+  video_url  String?
+  image_url  String?
+  content String?
+
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+}
+model Tryout {
+  id        String   @id @default(uuid(7))
+  title     String
+  exp Int
+  level Level
+  description String
+  duration_minutes Int
+  is_mock Boolean
+  passing_grade Int
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+
+  activity_id String   @unique
+  activity Activity @relation(fields: [activity_id], references: [id])
+  activity_histories ActivityHistory[]
+
+  sections Section[]
+  user_tryout_attempts UserTryoutAttempt[]
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+}
+model Section {
+  id        String   @id @default(uuid(7))
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  instruction String
+  title     String
+  content   String?
+  type SectionType
+  sequence Int
+  duration_minutes Int
+  passing_grade Int
+  tryout_id String
+  tryout   Tryout @relation(fields: [tryout_id], references: [id])
+
+  questions Question[]
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+  stimulis Stimuli[]
+}
+model Question {
+  id        String   @id @default(uuid(7))
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  
+  sequence     Int 
+  question  String
+  audio_url  String?
+  image_url  String?
+  question_type String
+  difficulty String
+  grade Int
+
+  section_id String?
+  section   Section? @relation(fields: [section_id], references: [id])
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+  choices Choice[]
+  stimuli_id String
+  stimuli Stimuli @relation(fields: [stimuli_id], references: [id])
+  user_answers UserAnswer[]
+}
+model Stimuli {
+  id String @id @default(uuid(7))
+  type String
+  text String?
+  instruction String?
+  content String?
+
+  questions Question[]
+  section_id String?
+  section   Section? @relation(fields: [section_id], references: [id])
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+}
+model Choice {
+  id        String   @id @default(uuid(7))
+  content String
+  image_url String?
+  is_correct  Boolean @default(false)
+
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+
+  question_id String
+  question   Question @relation(fields: [question_id], references: [id])
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+  user_answers UserAnswer[]
+}
+model UserTryoutAttempt {
+  id        String   @id @default(uuid(7))
+  user_id    String
+  tryout_id  String
+  grade     Int
+  passing_grade     Int
+  passed     Boolean
+  started_at   DateTime @default(now())
+  finished_at   DateTime? 
+  deleted_At DateTime?
+  created_at DateTime @default(now())
+
+  user      User     @relation(fields: [user_id], references: [id])
+  tryout    Tryout   @relation(fields: [tryout_id], references: [id])
+  user_answers UserAnswer[]
+}
+model UserAnswer {
+  id String @id @default(uuid(7))
+  choice_id String
+  choice Choice @relation(fields: [choice_id], references: [id])
+  is_correct Boolean
+  created_at DateTime @default(now())
+  deleted_at DateTime?
+  user_tryout_attempt_id String
+  user_tryout_attempts UserTryoutAttempt @relation(references: [id], fields: [user_tryout_attempt_id])
+  question_id String
+  question Question @relation(fields: [question_id], references: [id])
+
+}
+model Quiz {
+  id        String   @id @default(uuid(7))
+  title     String
+  exp Int
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  level Level
+  description String
+  duration_minutes Int?
+  passing_grade Int
+
+  quiz_questions QuizQuestion[]
+  activity_histories ActivityHistory[]
+
+  activity_id String   @unique
+  activity Activity @relation(fields: [activity_id], references: [id])
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+  user_quiz_attempts UserQuizAttempt[]
+}
+model QuizQuestion {
+  id        String   @id @default(uuid(7))
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
+
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  question_type String
+  question_text String
+  sequence Int
+  grade Int
+  difficulty_type String
+  quiz_choiced QuizChoice[]
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+}
+model QuizChoice {
+  id String @id @default(uuid())
+  quiz_question_id String
+  quiz_question QuizQuestion @relation(fields: [quiz_question_id], references: [id]) 
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+  user_quiz_answers UserQuizAnswer[] 
+
+  label String
+  content String
+  is_correct Boolean
+}
+model ActivityHistory {
+  id        String   @id @default(uuid(7))
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  exp Int
+
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+  grammar_deck_id String
+  grammar_deck GrammarDeck? @relation(fields: [grammar_deck_id], references: [id])
+  card_deck_id String
+  card_deck CardDeck? @relation(fields: [card_deck_id], references: [id])
+  tryout_id String
+  tryout Tryout? @relation(fields: [tryout_id], references: [id])
+  quiz_id String
+  quiz Quiz? @relation(fields: [quiz_id], references: [id])
+  suplement_id String
+  suplement Suplement? @relation(fields: [suplement_id], references: [id])
+  activity_id String
+  activity   Activity @relation(fields: [activity_id], references: [id])
+}
+model UserQuizAttempt {
+  id String @id @default(uuid())
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+  quiz_id String
+  quiz Quiz @relation(fields: [quiz_id], references: [id])
+  started_at DateTime @default(now())
+  finished_at DateTime?
+  grade Int
+  passing_grade Int
+  passed Boolean
+  user_quiz_answers UserQuizAnswer[] 
+}
+model UserQuizAnswer {
+  id String @id @default(uuid())
+  user_quiz_attempt_id String
+  user_quiz_attempt UserQuizAttempt @relation(fields: [user_quiz_attempt_id], references: [id])
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+  quiz_choice_id String
+  quiz_choice QuizChoice @relation(fields: [quiz_choice_id], references: [id])
+  is_correct Boolean
+  questioon_id String
+  deleted_at DateTime?
+  created_at DateTime @default(now())
+}
+model RefreshToken {
+  id          String   @id @default(uuid(7))
+  token       String   @unique
+  user_id     String
+  user        User     @relation(fields: [user_id], references: [id])
+  expires_at  DateTime
+  revoked_at  DateTime?
+  created_at  DateTime @default(now())
+  user_agent  String?
+
+  @@index([user_id])
+  @@index([token])
+}
+enum Role {
+  USER
+  ADMIN
+  MASTER
+}
+enum Level {
+  N1
+  N2
+  N3
+  N4
+  N5
+}
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+enum State {
+  NEW
+  LEARNING
+  REVIEW
+  RELEARNING
+}
+enum SectionType {
+  READING
+  LISTENING
+  GRAMMAR
+  VOCAB
+}

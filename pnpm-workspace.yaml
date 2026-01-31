@@ -1,0 +1,7 @@
+onlyBuiltDependencies:
+  - '@prisma/engines'
+  - esbuild
+  - prisma
+
+overrides:
+  hono@<4.11.4: '>=4.11.4'

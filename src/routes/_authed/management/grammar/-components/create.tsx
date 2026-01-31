@@ -1,0 +1,93 @@
+import { Plus } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	useCreateGrammarDeckForm,
+	useCreateGrammarDeckMutation,
+} from "../-hook";
+
+export const CreateGrammarDialog = () => {
+	const [open, setOpen] = useState(false);
+	const {
+		register,
+		reset,
+		handleSubmit,
+		formState: { errors },
+	} = useCreateGrammarDeckForm();
+	const { mutateAsync } = useCreateGrammarDeckMutation();
+	const handlerCreateGrammarDeck = handleSubmit(async (data) => {
+		await mutateAsync(data);
+		reset();
+		setOpen(false);
+	});
+
+	return (
+		<Dialog open={open} onOpenChange={setOpen}>
+			<DialogTrigger asChild>
+				<Button>
+					<Plus /> New Deck
+				</Button>
+			</DialogTrigger>
+			<DialogContent className="sm:max-w-[425px] border border-white">
+				<form className="  text-foreground" onSubmit={handlerCreateGrammarDeck}>
+					<DialogHeader className=" mb-4">
+						<DialogTitle className=" text-foreground">
+							New Grammar Deck
+						</DialogTitle>
+						{JSON.stringify(errors)}
+						<DialogDescription>Create new grammmar deck.</DialogDescription>
+					</DialogHeader>
+					<div className="grid gap-4">
+						<div className="grid gap-3">
+							<Label htmlFor="title" className=" text-foreground">
+								Name
+							</Label>
+							<Input
+								className=" text-foreground"
+								id={"title"}
+								{...register("title")}
+							/>
+							{errors.title && (
+								<p className=" text-red-500">{errors.title.message}</p>
+							)}
+						</div>
+						<div className="grid gap-3">
+							<Label htmlFor="exp" className=" text-foreground">
+								Exp
+							</Label>
+							<Input
+								// className=" text-foreground"
+								id={"exp"}
+								type="number"
+								{...register("exp", {
+									valueAsNumber: true,
+								})}
+							/>
+							{errors.exp && (
+								<p className=" text-red-500">{errors.exp.message}</p>
+							)}
+						</div>
+					</div>
+					<DialogFooter className=" mt-4">
+						<DialogClose asChild>
+							<Button>Cancel</Button>
+						</DialogClose>
+						<Button type="submit">Save changes</Button>
+					</DialogFooter>
+				</form>
+			</DialogContent>
+		</Dialog>
+	);
+};

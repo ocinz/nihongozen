@@ -1,0 +1,19 @@
+name: Deploy Main Branch
+run-name: ${{ github.actor }} is deploying to main
+on: [push]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3 # Community action untuk SSH
+        with:
+          host: ${{ secrets.HOST }} # ${{ secrets.X }} = ambil dari GitHub Secrets
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }} # Private key SSH
+          script: | # Commands yang dijalankan di server
+            cd /home/ubuntu/myapp
+            git pull origin main
+            docker compose -f docker-compose.prod.yml up -d
