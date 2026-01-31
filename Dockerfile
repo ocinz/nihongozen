@@ -18,4 +18,4 @@ RUN pnpm build
 
 EXPOSE 3000
 
-CMD ["node", ".output/server/index.mjs"]
+CMD sh -c "npx prisma migrate deploy && node .output/server/index.mjs"
