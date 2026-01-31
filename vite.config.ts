@@ -11,7 +11,9 @@ const config = defineConfig({
 	server: {
 		host: true,
 		port: 3000,
+		allowedHosts: ["nihongozen.kokage.tech"],
 	},
+
 	resolve: {
 		alias: {
 			"@": fileURLToPath(new URL("./src", import.meta.url)),
