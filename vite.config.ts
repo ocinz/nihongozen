@@ -11,7 +11,7 @@ const config = defineConfig({
 	server: {
 		host: true,
 		port: 3000,
-		allowedHosts: ["nihongozen.kokage.tech"],
+		allowedHosts: ["all"],
 	},
 
 	resolve: {
